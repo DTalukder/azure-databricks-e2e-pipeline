@@ -35,17 +35,6 @@ flowchart LR
     Silver -->|SCD2/expectations| GoldDims
   end
 
-## Architecture
-```mermaid
-flowchart LR
-  Source[ADLS Gen2 Raw Files] -->|Autoloader| Bronze[Bronze Delta Tables]
-  Bronze --> Silver[Silver Curated (conformed)]
-  Silver --> GoldDims[Gold Dimensions]
-  Silver --> GoldFact[Gold Fact_Orders]
-  subgraph DLT
-    Silver -->|SCD2/expectations| GoldDims
-  end
-
 ---
 
 ## Project Layout
