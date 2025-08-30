@@ -12,7 +12,7 @@ Production-like **Azure Databricks (Unity Catalog)** project using **Autoloader*
 
 ## Table of Contents
 - [Architecture](#architecture)
-- [Project Layout](#project-layout)
+- [Project Layout](#Project Layout)
 - [Data Model (Star Schema)](#data-model-star-schema)
 - [How to Run](#how-to-run)
 - [Configuration](#configuration)
