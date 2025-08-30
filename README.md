@@ -35,7 +35,7 @@ flowchart LR
     Silver -->|SCD2/expectations| GoldDims
   end
 
-
+---
 
 ## Project Layout
 ├─ config/
