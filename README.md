@@ -25,14 +25,19 @@ Production-like **Azure Databricks (Unity Catalog)** project using **Autoloader*
 ---
 
 ## Architecture
-```mermaid
+
 flowchart LR
-  Source[ADLS Gen2 Raw Files] -->|Autoloader| Bronze[Bronze Delta Tables]
-  Bronze --> Silver[Silver Curated (conformed)]
-  Silver --> GoldDims[Gold Dimensions]
-  Silver --> GoldFact[Gold Fact_Orders]
-  subgraph DLT
-    Silver -->|SCD2/expectations| GoldDims
+  Raw[ADLS Gen2<br/>Raw files] -->|Autoloader| Bronze[Bronze (Delta)]
+  Bronze -->|Transform / Cleanse| Silver[Silver (curated)]
+  Silver -->|SCD Type 2 + Expectations| GoldDims[Gold Dimensions]
+  Silver -->|Joins / Aggregations| FactOrders[Gold Fact_Orders]
+
+  %% Optional grouping to show DLT governs the flow
+  subgraph DLT [DLT Pipeline]
+    Bronze
+    Silver
+    GoldDims
+    FactOrders
   end
 
 ---
@@ -60,6 +65,9 @@ flowchart LR
 ## Data Model (Star Schema)
 
 erDiagram
+  DIMCUSTOMERS ||--o{ FACTORDERS : has
+  DIMPRODUCTS  ||--o{ FACTORDERS : has
+
   DIMCUSTOMERS {
     INT    DimCustomerKey PK
     STRING CustomerID
@@ -92,12 +100,10 @@ erDiagram
     DECIMAL ExtendedAmount
   }
 
-  DIMCUSTOMERS ||--o{ FACTORDERS : has
-  DIMPRODUCTS  ||--o{ FACTORDERS : has
-
 ---
 
 ## How to Run
+
 ### 1. Configure
 
 #### A. config/00_config.py:
@@ -142,12 +148,13 @@ CREATE SCHEMA  IF NOT EXISTS your_catalog.your_schema;
 
 ## Validation & Quality Checks
 
-### Counts (sanity):
+**Counts (sanity)**  
+```sql
 SELECT COUNT(*) FROM your_catalog.your_schema.dimcustomers;
 SELECT COUNT(*) FROM your_catalog.your_schema.dimproducts;
 SELECT COUNT(*) FROM your_catalog.your_schema.factorders;
 
-### Foreign keys should not be NULL in fact:
+**Foreign keys should not be NULL in fact:**
 SELECT SUM(CASE WHEN DimCustomerKey IS NULL THEN 1 ELSE 0 END) AS NullCustomerFK,
        SUM(CASE WHEN DimProductKey  IS NULL THEN 1 ELSE 0 END) AS NullProductFK
 FROM your_catalog.your_schema.factorders;
@@ -156,32 +163,40 @@ FROM your_catalog.your_schema.factorders;
 
 ## Screenshots
 
-(Will update soon)
-
+**DLT pipeline**  
 ![DLT pipeline](docs/img/01_dlt_pipeline_graph.png)
 
-![Cluster](docs/img/02_cluster_config.png)
+**DLT compute (Photon ON)**  
+![DLT compute (Photon ON)](docs/img/02a_dlt_compute_on.png)
 
-![UC tables](docs/img/03_uc_catalog_tables.png)
+**DLT compute (details)**  
+![DLT compute (details)](docs/img/02b_dlt_compute_on.png)
 
-![Job success](docs/img/04_job_run_success.png)
+**Job run DAG (success)**  
+![Job run DAG](docs/img/03_job_run_dag.png)
+
+**Unity Catalog (catalog & schemas)**  
+![UC catalog & tables](docs/img/04_uc_catalog.png)
+
+**SQL sanity (counts & FK nulls)**  
+![SQL sanity](docs/img/05_sql_sanity.png)
 
 ---
 
 ## Pain Points & Lessons
-#### See docs/pain_points.md (UC vs HMS, quotas, DLT vs notebooks, Autoloader gotchas).
-#### See docs/lessons_learned.md (the distilled checklist I now follow).
+### See docs/pain_points.md (UC vs HMS, quotas, DLT vs notebooks, Autoloader gotchas).
+### See docs/lessons_learned.md (the distilled checklist I now follow).
 
 ---
 
-## Cost and Cluster Notes
+## Cost & Cluster Notes
 
-#### For tutorial/dev scale, a small job cluster (1–2 workers) is plenty.
-#### Photon ON for SQL/Delta workloads.
-#### Cost ≈ cluster uptime. Stop clusters when idle.
-#### Check Azure vCPU quotas first to avoid “WAITING_FOR_RESOURCES”.
+### For tutorial/dev scale, a small job cluster (1–2 workers) is plenty.
+### Photon ON for SQL/Delta workloads.
+### Cost ≈ cluster uptime. Stop clusters when idle.
+### Check Azure vCPU quotas first to avoid “WAITING_FOR_RESOURCES”.
 
 ---
 
 ## License
-#### Released under the MIT License
+### Released under the MIT License
