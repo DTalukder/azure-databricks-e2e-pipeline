@@ -189,8 +189,9 @@ FROM your_catalog.your_schema.factorders;
 ---
 
 ## Pain Points & Lessons
-- See `docs/pain_points.md` (UC vs HMS, quotas, DLT vs notebooks, Autoloader gotchas)
-- See `docs/lessons_learned.md` (the distilled checklist I now follow)
+- See [docs/pain_points.md](docs/pain_points.md)
+- See [docs/lessons_learned.md](docs/lessons_learned.md)
+
 
 ---
 
