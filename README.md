@@ -26,39 +26,33 @@ Production-like **Azure Databricks (Unity Catalog)** project using **Autoloader*
 
 ## Architecture
 
+```mermaid
 flowchart LR
-  Raw[ADLS Gen2<br/>Raw files] -->|Autoloader| Bronze[Bronze (Delta)]
-  Bronze -->|Transform / Cleanse| Silver[Silver (curated)]
+  Raw[ADLS Gen2 Raw Files] -->|Autoloader| Bronze[Bronze (Delta)]
+  Bronze -->|Transform / Cleanse| Silver[Silver (Curated)]
   Silver -->|SCD Type 2 + Expectations| GoldDims[Gold Dimensions]
   Silver -->|Joins / Aggregations| FactOrders[Gold Fact_Orders]
-
-  %% Optional grouping to show DLT governs the flow
-  subgraph DLT [DLT Pipeline]
-    Bronze
-    Silver
-    GoldDims
-    FactOrders
-  end
 
 ---
 
 ## Project Layout
+
 ├─ config/
-│  └─ 00_config.py
+│ └─ 00_config.py
 ├─ bronze/
-│  └─ 10_bronze_autoload.py
+│ └─ 10_bronze_autoload.py
 ├─ silver/
-│  ├─ 20_silver_orders.py
-│  ├─ 21_silver_customers.py
-│  ├─ 22_silver_products.py
-│  └─ 23_silver_regions.py
+│ ├─ 20_silver_orders.py
+│ ├─ 21_silver_customers.py
+│ ├─ 22_silver_products.py
+│ └─ 23_silver_regions.py
 ├─ gold/
-│  ├─ 30_gold_dim_customers.py
-│  ├─ 31_gold_dim_products_dlt.py   # DLT pipeline (run via Pipelines UI/Jobs, not cell-by-cell)
-│  └─ 32_gold_fact_orders.py
+│ ├─ 30_gold_dim_customers.py
+│ ├─ 31_gold_dim_products_dlt.py # DLT pipeline (run via Pipelines UI/Jobs, not cell-by-cell)
+│ └─ 32_gold_fact_orders.py
 └─ docs/
-   ├─ pain_points.md
-   ├─ lessons_learned.md
+├─ pain_points.md
+└─ lessons_learned.md
 
 ---
 
@@ -181,22 +175,23 @@ FROM your_catalog.your_schema.factorders;
 **SQL sanity (counts & FK nulls)**  
 ![SQL sanity](docs/img/05_sql_sanity.png)
 
+
 ---
 
 ## Pain Points & Lessons
-### See docs/pain_points.md (UC vs HMS, quotas, DLT vs notebooks, Autoloader gotchas).
-### See docs/lessons_learned.md (the distilled checklist I now follow).
+- See docs/pain_points.md (UC vs HMS, quotas, DLT vs notebooks, Autoloader gotchas).
+- See docs/lessons_learned.md (the distilled checklist I now follow).
 
 ---
 
 ## Cost & Cluster Notes
 
-### For tutorial/dev scale, a small job cluster (1–2 workers) is plenty.
-### Photon ON for SQL/Delta workloads.
-### Cost ≈ cluster uptime. Stop clusters when idle.
-### Check Azure vCPU quotas first to avoid “WAITING_FOR_RESOURCES”.
+- For tutorial/dev scale, a small job cluster (1–2 workers) is plenty.
+- Photon ON for SQL/Delta workloads.
+- Cost ≈ cluster uptime. Stop clusters when idle.
+- Check Azure vCPU quotas first to avoid “WAITING_FOR_RESOURCES
 
 ---
 
 ## License
-### Released under the MIT License
+- Released under the MIT License
