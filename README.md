@@ -28,15 +28,17 @@ Production-like **Azure Databricks (Unity Catalog)** project using **Autoloader*
 
 ```mermaid
 flowchart LR
-  Raw[ADLS Gen2 Raw Files] -->|Autoloader| Bronze[Bronze (Delta)]
-  Bronze -->|Transform / Cleanse| Silver[Silver (Curated)]
-  Silver -->|SCD Type 2 + Expectations| GoldDims[Gold Dimensions]
-  Silver -->|Joins / Aggregations| FactOrders[Gold Fact_Orders]
+    Raw["ADLS Gen2 Raw Files"] -->|Autoloader| Bronze["Bronze (Delta)"]
+    Bronze -->|Transform / Cleanse| Silver["Silver (Curated)"]
+    Silver -->|SCD Type 2 + Expectations| GoldDims["Gold Dimensions"]
+    Silver -->|Joins / Aggregations| FactOrders["Gold Fact_Orders"]
+```
 
 ---
 
 ## Project Layout
 
+```
 ├─ config/
 │ └─ 00_config.py
 ├─ bronze/
@@ -51,13 +53,15 @@ flowchart LR
 │ ├─ 31_gold_dim_products_dlt.py # DLT pipeline (run via Pipelines UI/Jobs, not cell-by-cell)
 │ └─ 32_gold_fact_orders.py
 └─ docs/
-├─ pain_points.md
-└─ lessons_learned.md
+   ├─ pain_points.md
+   └─ lessons_learned.md
+```
 
 ---
 
 ## Data Model (Star Schema)
 
+```mermaid
 erDiagram
   DIMCUSTOMERS ||--o{ FACTORDERS : has
   DIMPRODUCTS  ||--o{ FACTORDERS : has
@@ -93,6 +97,7 @@ erDiagram
     DECIMAL UnitPrice
     DECIMAL ExtendedAmount
   }
+```
 
 ---
 
@@ -101,31 +106,34 @@ erDiagram
 ### 1. Configure
 
 #### A. config/00_config.py:
+```python
 CATALOG = "your_catalog"
 SCHEMA  = "your_schema"
 RAW_PATH     = "abfss://<container>@<account>.dfs.core.windows.net/raw"
 BRONZE_PATH  = "abfss://<container>@<account>.dfs.core.windows.net/bronze"
 SILVER_PATH  = "abfss://<container>@<account>.dfs.core.windows.net/silver"
 GOLD_PATH    = "abfss://<container>@<account>.dfs.core.windows.net/gold"
-
+```
 
 #### B. Initialize UC objects if needed:
+```sql
 CREATE CATALOG IF NOT EXISTS your_catalog;
 CREATE SCHEMA  IF NOT EXISTS your_catalog.your_schema;
+```
 
 ### 2. Bronze (Autoloader)
-#### Run bronze/10_bronze_autoload.py.
-#### Uses spark.readStream.format("cloudFiles") with cloudFiles.schemaLocation.
-#### Batch-style run: .trigger(once=True) → ingest then stop.
+- Run `bronze/10_bronze_autoload.py`  
+- Uses `spark.readStream.format("cloudFiles")` with `cloudFiles.schemaLocation`  
+- Batch-style run: `.trigger(once=True)` → ingest then stop
 
-### 3. Silver transforms
-#### Run silver/20–23_* in order (types, keys, business rules).
+### 3. Silver transforms  
+- Run `silver/20–23_*` in order (types, keys, business rules)
 
-### 4. Gold
-#### Run gold/30_gold_dim_customers.py.
-#### Create a DLT Pipeline for gold/31_gold_dim_products_dlt.py (don’t run cell-by-cell).
+### 4. Gold  
+- Run `gold/30_gold_dim_customers.py`  
+- Create a **DLT Pipeline** for `gold/31_gold_dim_products_dlt.py` (don’t run cell-by-cell)
 
-### 5. Validate (see below).
+### 5. Validate (see below)
 
 ---
 
@@ -147,11 +155,14 @@ CREATE SCHEMA  IF NOT EXISTS your_catalog.your_schema;
 SELECT COUNT(*) FROM your_catalog.your_schema.dimcustomers;
 SELECT COUNT(*) FROM your_catalog.your_schema.dimproducts;
 SELECT COUNT(*) FROM your_catalog.your_schema.factorders;
+```
 
-**Foreign keys should not be NULL in fact:**
+**Foreign keys should not be NULL in fact:**  
+```sql
 SELECT SUM(CASE WHEN DimCustomerKey IS NULL THEN 1 ELSE 0 END) AS NullCustomerFK,
        SUM(CASE WHEN DimProductKey  IS NULL THEN 1 ELSE 0 END) AS NullProductFK
 FROM your_catalog.your_schema.factorders;
+```
 
 ---
 
@@ -175,23 +186,22 @@ FROM your_catalog.your_schema.factorders;
 **SQL sanity (counts & FK nulls)**  
 ![SQL sanity](docs/img/05_sql_sanity.png)
 
-
 ---
 
 ## Pain Points & Lessons
-- See docs/pain_points.md (UC vs HMS, quotas, DLT vs notebooks, Autoloader gotchas).
-- See docs/lessons_learned.md (the distilled checklist I now follow).
+- See `docs/pain_points.md` (UC vs HMS, quotas, DLT vs notebooks, Autoloader gotchas)
+- See `docs/lessons_learned.md` (the distilled checklist I now follow)
 
 ---
 
 ## Cost & Cluster Notes
 
-- For tutorial/dev scale, a small job cluster (1–2 workers) is plenty.
-- Photon ON for SQL/Delta workloads.
-- Cost ≈ cluster uptime. Stop clusters when idle.
-- Check Azure vCPU quotas first to avoid “WAITING_FOR_RESOURCES
+- For tutorial/dev scale, a small job cluster (1–2 workers) is plenty  
+- Photon ON for SQL/Delta workloads  
+- Cost ≈ cluster uptime. Stop clusters when idle  
+- Check Azure vCPU quotas first to avoid “WAITING_FOR_RESOURCES”
 
 ---
 
-## License
+## License  
 - Released under the MIT License
