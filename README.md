@@ -120,16 +120,16 @@ CREATE CATALOG IF NOT EXISTS your_catalog;
 CREATE SCHEMA  IF NOT EXISTS your_catalog.your_schema;
 
 ### 2. Bronze (Autoloader)
-#### Run bronze/10_bronze_autoload.py.
-#### Uses spark.readStream.format("cloudFiles") with cloudFiles.schemaLocation.
-#### Batch-style run: .trigger(once=True) → ingest then stop.
+- Run bronze/10_bronze_autoload.py.
+- Uses spark.readStream.format("cloudFiles") with cloudFiles.schemaLocation.
+- Batch-style run: .trigger(once=True) → ingest then stop.
 
 ### 3. Silver transforms
-#### Run silver/20–23_* in order (types, keys, business rules).
+- Run silver/20–23_* in order (types, keys, business rules).
 
 ### 4. Gold
-#### Run gold/30_gold_dim_customers.py.
-#### Create a DLT Pipeline for gold/31_gold_dim_products_dlt.py (don’t run cell-by-cell).
+- Run gold/30_gold_dim_customers.py.
+- Create a DLT Pipeline for gold/31_gold_dim_products_dlt.py (don’t run cell-by-cell).
 
 ### 5. Validate (see below).
 
@@ -184,17 +184,17 @@ FROM your_catalog.your_schema.factorders;
 ---
 
 ## Pain Points & Lessons
-### See docs/pain_points.md (UC vs HMS, quotas, DLT vs notebooks, Autoloader gotchas).
-### See docs/lessons_learned.md (the distilled checklist I now follow).
+- See docs/pain_points.md (UC vs HMS, quotas, DLT vs notebooks, Autoloader gotchas).
+- See docs/lessons_learned.md (the distilled checklist I now follow).
 
 ---
 
 ## Cost & Cluster Notes
 
-### For tutorial/dev scale, a small job cluster (1–2 workers) is plenty.
-### Photon ON for SQL/Delta workloads.
-### Cost ≈ cluster uptime. Stop clusters when idle.
-### Check Azure vCPU quotas first to avoid “WAITING_FOR_RESOURCES”.
+- For tutorial/dev scale, a small job cluster (1–2 workers) is plenty.
+- Photon ON for SQL/Delta workloads.
+- Cost ≈ cluster uptime. Stop clusters when idle.
+- Check Azure vCPU quotas first to avoid “WAITING_FOR_RESOURCES”.
 
 ---
 
