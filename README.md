@@ -26,23 +26,21 @@ Production-like **Azure Databricks (Unity Catalog)** project using **Autoloader*
 
 ## Architecture
 
+```mermaid
 flowchart LR
-  Raw[ADLS Gen2<br/>Raw files] -->|Autoloader| Bronze[Bronze (Delta)]
-  Bronze -->|Transform / Cleanse| Silver[Silver (curated)]
+  Raw[ADLS Gen2 Raw Files] -->|Autoloader| Bronze[Bronze (Delta)]
+  Bronze -->|Transform / Cleanse| Silver[Silver (Curated)]
   Silver -->|SCD Type 2 + Expectations| GoldDims[Gold Dimensions]
   Silver -->|Joins / Aggregations| FactOrders[Gold Fact_Orders]
 
-  %% Optional grouping to show DLT governs the flow
   subgraph DLT [DLT Pipeline]
-    Bronze
-    Silver
-    GoldDims
-    FactOrders
+      Bronze --> Silver --> GoldDims --> FactOrders
   end
 
 ---
 
 ## Project Layout
+
 ├─ config/
 │  └─ 00_config.py
 ├─ bronze/
@@ -54,7 +52,7 @@ flowchart LR
 │  └─ 23_silver_regions.py
 ├─ gold/
 │  ├─ 30_gold_dim_customers.py
-│  ├─ 31_gold_dim_products_dlt.py   # DLT pipeline (run via Pipelines UI/Jobs, not cell-by-cell)
+│  ├─ 31_gold_dim_products_dlt.py
 │  └─ 32_gold_fact_orders.py
 └─ docs/
    ├─ pain_points.md
@@ -120,16 +118,16 @@ CREATE CATALOG IF NOT EXISTS your_catalog;
 CREATE SCHEMA  IF NOT EXISTS your_catalog.your_schema;
 
 ### 2. Bronze (Autoloader)
-#### Run bronze/10_bronze_autoload.py.
-#### Uses spark.readStream.format("cloudFiles") with cloudFiles.schemaLocation.
-#### Batch-style run: .trigger(once=True) → ingest then stop.
+- Run bronze/10_bronze_autoload.py.
+- Uses spark.readStream.format("cloudFiles") with cloudFiles.schemaLocation.
+- Batch-style run: .trigger(once=True) → ingest then stop.
 
 ### 3. Silver transforms
-#### Run silver/20–23_* in order (types, keys, business rules).
+- Run silver/20–23_* in order (types, keys, business rules).
 
 ### 4. Gold
-#### Run gold/30_gold_dim_customers.py.
-#### Create a DLT Pipeline for gold/31_gold_dim_products_dlt.py (don’t run cell-by-cell).
+- Run gold/30_gold_dim_customers.py.
+- Create a DLT Pipeline for gold/31_gold_dim_products_dlt.py (don’t run cell-by-cell).
 
 ### 5. Validate (see below).
 
@@ -148,7 +146,7 @@ CREATE SCHEMA  IF NOT EXISTS your_catalog.your_schema;
 
 ## Validation & Quality Checks
 
-**Counts (sanity)**  
+**Counts (sanity check)**  
 ```sql
 SELECT COUNT(*) FROM your_catalog.your_schema.dimcustomers;
 SELECT COUNT(*) FROM your_catalog.your_schema.dimproducts;
@@ -164,22 +162,22 @@ FROM your_catalog.your_schema.factorders;
 ## Screenshots
 
 **DLT pipeline**  
-![DLT pipeline](docs/img/01_dlt_pipeline_graph.png)
+![DLT pipeline](/docs/img/01_dlt_pipeline_graph.png)
 
 **DLT compute (Photon ON)**  
-![DLT compute (Photon ON)](docs/img/02a_dlt_compute_on.png)
+![DLT compute (Photon ON)](/docs/img/02a_dlt_compute_on.png)
 
 **DLT compute (details)**  
-![DLT compute (details)](docs/img/02b_dlt_compute_on.png)
+![DLT compute (details)](/docs/img/02b_dlt_compute_on.png)
 
 **Job run DAG (success)**  
-![Job run DAG](docs/img/03_job_run_dag.png)
+![Job run DAG](/docs/img/03_job_run_dag.png)
 
-**Unity Catalog (catalog & schemas)**  
-![UC catalog & tables](docs/img/04_uc_catalog.png)
+**Unity Catalog (catalog & tables)**  
+![UC catalog & tables](/docs/img/04_uc_catalog.png)
 
 **SQL sanity (counts & FK nulls)**  
-![SQL sanity](docs/img/05_sql_sanity.png)
+![SQL sanity](/docs/img/05_sql_sanity.png)
 
 ---
 
@@ -191,10 +189,11 @@ FROM your_catalog.your_schema.factorders;
 
 ## Cost & Cluster Notes
 
-### For tutorial/dev scale, a small job cluster (1–2 workers) is plenty.
-### Photon ON for SQL/Delta workloads.
-### Cost ≈ cluster uptime. Stop clusters when idle.
-### Check Azure vCPU quotas first to avoid “WAITING_FOR_RESOURCES”.
+### Dev scale: A small job cluster (1–2 workers) is enough for small projects.
+### Photon: Improves SQL/Delta performance but may slightly increase costs.
+### Cost ≈ cluster uptime. Cost incurs while the cluster is active. Always configure auto-termination to shut down idle clusters.
+### vCPU quotas: Check Azure quotas first to avoid “WAITING_FOR_RESOURCES” delays.
+### Networking: NAT Gateway adds a fixed daily cost. For small projects, use a custom VNet with public/private subnets to cut expenses.
 
 ---
 
