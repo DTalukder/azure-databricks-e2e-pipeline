@@ -4,6 +4,7 @@
 ![Platform](https://img.shields.io/badge/Platform-Azure%20Databricks-blue)
 ![Storage](https://img.shields.io/badge/Storage-Delta%20Lake-blueviolet)
 ![Orchestration](https://img.shields.io/badge/Orchestration-Delta%20Live%20Tables-orange)
+![Ingestion](https://img.shields.io/badge/Ingestion-Streaming%20via%20Autoloader-yellow)
 ![Compute](https://img.shields.io/badge/Compute-Photon%20ON-success)
 
 Production-like **Azure Databricks (Unity Catalog)** project using **Autoloader**, **Delta Live Tables (DLT)**, and **PySpark** to build a **Gold star schema** (Dimensions + Fact). Designed to show end-to-end engineering, not just a single notebook.
