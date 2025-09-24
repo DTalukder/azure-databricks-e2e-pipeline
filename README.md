@@ -40,8 +40,6 @@ flowchart LR
 ## Project Layout
 
 ```
-├─ config/
-│ └─ 00_config.py
 ├─ bronze/
 │ └─ 10_bronze_autoload.py
 ├─ silver/
@@ -106,21 +104,21 @@ erDiagram
 
 ### 1. Configure
 
-#### A. config/00_config.py:
-```python
-CATALOG = "your_catalog"
-SCHEMA  = "your_schema"
-RAW_PATH     = "abfss://<container>@<account>.dfs.core.windows.net/raw"
-BRONZE_PATH  = "abfss://<container>@<account>.dfs.core.windows.net/bronze"
-SILVER_PATH  = "abfss://<container>@<account>.dfs.core.windows.net/silver"
-GOLD_PATH    = "abfss://<container>@<account>.dfs.core.windows.net/gold"
-```
-
-#### B. Initialize UC objects if needed:
+#### A. Initialize UC objects if needed:
 ```sql
 CREATE CATALOG IF NOT EXISTS your_catalog;
 CREATE SCHEMA  IF NOT EXISTS your_catalog.your_schema;
 ```
+
+#### B. Define storage paths directly in notebooks:
+```python
+abfss://source@<storageaccount>.dfs.core.windows.net/
+abfss://bronze@<storageaccount>.dfs.core.windows.net/
+abfss://silver@<storageaccount>.dfs.core.windows.net/
+abfss://gold@<storageaccount>.dfs.core.windows.net/
+```
+
+
 
 ### 2. Bronze (Autoloader)
 - Run `bronze/10_bronze_autoload.py`  
@@ -140,12 +138,12 @@ CREATE SCHEMA  IF NOT EXISTS your_catalog.your_schema;
 
 ## Configuration
 
-| Setting             | Where                 | Notes                                                  |
-| ------------------- | --------------------- | ------------------------------------------------------ |
-| `CATALOG`, `SCHEMA` | `config/00_config.py` | Use UC names everywhere: `catalog.schema.table`        |
-| Storage paths       | `config/00_config.py` | ABFSS URIs for raw/bronze/silver/gold                  |
-| Cluster             | Databricks UI         | Tiny **job** cluster (1–2 workers), **Photon ON**      |
-| DLT                 | Pipelines UI          | Configure & run Pipeline; don’t “Run All” the notebook |
+| Setting             | Where          | Notes                                                  |
+| ------------------- | -------------- | ------------------------------------------------------ |
+| `CATALOG`, `SCHEMA` | In notebooks   | Use UC names everywhere: `catalog.schema.table`        |
+| Storage paths       | In notebooks   | ABFSS URIs for raw/bronze/silver/gold (see below)      |
+| Cluster             | Databricks UI  | Tiny **job** cluster (1–2 workers), **Photon ON**      |
+| DLT                 | Pipelines UI   | Configure & run Pipeline; don’t “Run All” the notebook |
 
 ---
 
