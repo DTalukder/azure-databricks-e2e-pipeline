@@ -8,6 +8,11 @@
 ![Compute](https://img.shields.io/badge/Compute-Photon%20ON-success)
 
 Production-like **Azure Databricks (Unity Catalog)** project using **Autoloader**, **Delta Live Tables (DLT)**, and **PySpark** to build a **Gold star schema** (Dimensions + Fact). Designed to show end-to-end engineering, not just a single notebook.
+---
+
+**Business Problem it Solves:**
+
+Many organizations face a bottleneck turning raw data into clean, analytics-ready formats that drive decision-making. This project builds a full end-to-end pipeline on Azure Databricks using **Delta Lake** and the **Medallion Architecture (Bronze → Silver → Gold)**. It ingests raw Parquet data, enforces schema, applies cleaning and transformation logic in PySpark, and outputs a **Star Schema** (fact + dimension tables). The pipeline also incorporates data lineage, modular transformations, and validation logic—mirroring how modern enterprises prepare data for dashboards, KPIs, and advanced analytics tools.
 
 ---
 
